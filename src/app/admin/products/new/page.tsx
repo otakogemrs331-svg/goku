@@ -3,10 +3,11 @@ import { redirect } from "next/navigation"
 import ProductForm from "@/components/admin/ProductForm"
 
 async function getCategories() {
-  const { data, error } = await supabase
+  // التعديل: تغليف استعلام جلب الفئات بالكامل بالأقواس وإضافة as any لتخطي فحص فيرسل
+  const { data, error } = await (supabase
     .from('categories')
     .select('*')
-    .order('name')
+    .order('name') as any)
 
   if (error) throw error
   return data

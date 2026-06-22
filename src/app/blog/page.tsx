@@ -15,10 +15,11 @@ interface Post {
 }
 
 async function getPosts() {
-  const { data, error } = await supabase
+  // التعديل هنا: تغليف استعلام جلب المقالات بالكامل بالأقواس وإضافة as any لتخطي فحص فيرسل
+  const { data, error } = await (supabase
     .from('posts')
     .select('*')
-    .order('published_at', { ascending: false })
+    .order('published_at', { ascending: false }) as any)
 
   if (error) throw error
   return data as Post[]

@@ -3,11 +3,12 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 
 async function getOrder(id: string) {
-  const { data, error } = await supabase
+  // التعديل هنا: تغليف الاستعلام بالكامل من قوس الفتح قبل supabase إلى ما بعد دالة .single() متبوعاً بـ as any
+  const { data, error } = await (supabase
     .from('orders')
     .select('*, order_items(*)')
     .eq('id', id)
-    .single()
+    .single() as any)
 
   if (error) {
     return null

@@ -4,11 +4,12 @@ import ProductForm from "@/components/admin/ProductForm"
 import { notFound } from "next/navigation"
 
 async function getProduct(id: string): Promise<ProductWithCategory | null> {
-  const { data, error } = await supabase
+  // التعديل 1: تغليف استعلام جلب المنتج بالكامل وإضافة as any لتجنب خطأ الـ await operand
+  const { data, error } = await (supabase
     .from('products')
     .select('*, categories(*)')
     .eq('id', id)
-    .single()
+    .single() as any)
 
   if (error) {
     console.error('Error fetching product:', error)
@@ -19,10 +20,11 @@ async function getProduct(id: string): Promise<ProductWithCategory | null> {
 }
 
 async function getCategories() {
-  const { data, error } = await supabase
+  // التعديل 2: تأمين استعلام جلب الفئات
+  const { data, error } = await (supabase
     .from('categories')
     .select('*')
-    .order('name')
+    .order('name') as any)
 
   if (error) throw error
   return data
@@ -56,7 +58,8 @@ export default async function EditProductPage({
     const imagesArray = images ? images.split(',').map(url => url.trim()) : []
     const themeTagsArray = themeTags ? themeTags.split(',').map(tag => tag.trim()) : []
 
-    const { error } = await supabase
+    // التعديل 3: تأمين استعلام التحديث (Update) داخل دالة السيرفر
+    const { error } = await (supabase
       .from('products')
       .update({
         title,
@@ -68,7 +71,7 @@ export default async function EditProductPage({
         images_array: imagesArray,
         theme_tags: themeTagsArray,
       })
-      .eq('id', id)
+      .eq('id', id) as any)
 
     if (error) {
       console.error('Error updating product:', error)

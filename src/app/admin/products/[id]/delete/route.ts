@@ -7,7 +7,8 @@ export async function POST(
 ) {
   const { id } = await params
 
-  const { error } = await supabase.from('products').delete().eq('id', id)
+  // التعديل هنا: تغليف استعلام الحذف بالكامل بالأقواس وإضافة as any لمنع اعتراض TypeScript
+  const { error } = await (supabase.from('products').delete().eq('id', id) as any)
 
   if (error) {
     console.error('Error deleting product:', error)

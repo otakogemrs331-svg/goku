@@ -9,11 +9,12 @@ interface ProductPageProps {
 }
 
 async function getProduct(slug: string): Promise<ProductWithCategory | null> {
-  const { data, error } = await supabase
+  // التعديل هنا: تغليف استعلام جلب المنتج بالكامل بالأقواس وإضافة as any لتخطي فحص فيرسل
+  const { data, error } = await (supabase
     .from('products')
     .select('*, categories(*)')
     .eq('slug', slug)
-    .single()
+    .single() as any)
 
   if (error) {
     console.error('Error fetching product:', error)

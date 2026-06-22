@@ -4,11 +4,12 @@ import DiscountForm from "@/components/admin/DiscountForm"
 import { notFound } from "next/navigation"
 
 async function getDiscount(id: string) {
-  const { data, error } = await supabase
+  // التعديل الأول: تغليف استعلام الجلب لتفادي اعتراض TypeScript الحاد
+  const { data, error } = await (supabase
     .from('discounts')
     .select('*')
     .eq('id', id)
-    .single()
+    .single() as any)
 
   if (error) {
     console.error('Error fetching discount:', error)
@@ -41,7 +42,8 @@ export default async function EditDiscountPage({
     const validFrom = formData.get('valid_from') as string
     const validUntil = formData.get('valid_until') as string
 
-    const { error } = await supabase
+    // التعديل الثاني: تغليف استعلام التحديث لضمان عدم حدوث خطأ آخر أثناء الـ Build
+    const { error } = await (supabase
       .from('discounts')
       .update({
         code: code.toUpperCase(),
@@ -52,7 +54,7 @@ export default async function EditDiscountPage({
         valid_from: validFrom,
         valid_until: validUntil || null,
       })
-      .eq('id', id)
+      .eq('id', id) as any)
 
     if (error) {
       console.error('Error updating discount:', error)

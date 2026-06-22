@@ -3,18 +3,20 @@ import Link from "next/link"
 
 async function getDashboardStats() {
   try {
+    // التعديل 1: تغليف الاستعلامات الثلاثة المتوازية داخل الـ Promise.all لمنع اعتراض TypeScript
     const [productsCount, ordersCount, lowStockCount] = await Promise.all([
-      supabase.from('products').select('id', { count: 'exact', head: true }),
-      supabase.from('orders').select('id', { count: 'exact', head: true }),
-      supabase.from('products').select('id', { count: 'exact', head: true }).lt('stock', 5),
+      (supabase.from('products').select('id', { count: 'exact', head: true }) as any),
+      (supabase.from('orders').select('id', { count: 'exact', head: true }) as any),
+      (supabase.from('products').select('id', { count: 'exact', head: true }).lt('stock', 5) as any),
     ])
 
-    const totalSales = await supabase
+    // التعديل 2: تغليف استعلام المبيعات وإضافة التعيين الصريح للـ data داخلياً
+    const totalSales = await (supabase
       .from('order_items')
-      .select('price, quantity')
-      .then(({ data }) => {
+      .select('price, quantity') as any)
+      .then(({ data }: any) => {
         if (!data) return 0
-        return data.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        return data.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
       })
 
     return {

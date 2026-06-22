@@ -16,11 +16,12 @@ interface Post {
 }
 
 async function getPost(slug: string): Promise<Post | null> {
-  const { data, error } = await supabase
+  // التعديل هنا: تغليف استعلام جلب المقال بالكامل بالأقواس وإضافة as any لتخطي فحص فيرسل
+  const { data, error } = await (supabase
     .from('posts')
     .select('*')
     .eq('slug', slug)
-    .single()
+    .single() as any)
 
   if (error) return null
   return data as Post

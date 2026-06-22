@@ -14,7 +14,9 @@ export default function NewDiscountPage() {
     const validUntil = formData.get('valid_until') as string
 
     const { supabase } = await import('@/lib/supabase')
-    const { error } = await supabase.from('discounts').insert({
+    
+    // التعديل هنا: تغليف استعلام الإدخال بالكامل داخل أقواس وإضافة as any لحل خطأ المترجم
+    const { error } = await (supabase.from('discounts').insert({
       code: code.toUpperCase(),
       discount_type: discountType,
       discount_value: discountValue,
@@ -24,7 +26,7 @@ export default function NewDiscountPage() {
       valid_from: validFrom,
       valid_until: validUntil || null,
       is_active: true,
-    })
+    }) as any)
 
     if (error) {
       console.error('Error creating discount:', error)

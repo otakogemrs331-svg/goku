@@ -2,11 +2,12 @@ import { supabase } from "@/lib/supabase"
 
 async function getOrders() {
   try {
-    const { data, error } = await supabase
+    // التعديل 1: تأمين استعلام الطلبات الرئيسي
+    const { data, error } = await (supabase
       .from('orders')
       .select('*, order_items(*)')
       .order('created_at', { ascending: false })
-      .limit(50)
+      .limit(50) as any)
 
     if (error) throw error
     return data
@@ -20,20 +21,21 @@ async function getSalesMetrics() {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
+    // التعديل 2: تأمين كافة الاستعلامات المتوازية داخل الـ Promise
     const [totalRevenue, orderCount, topProducts] = await Promise.all([
-      supabase
+      (supabase
         .from('order_items')
-        .select('price, quantity')
-        .then(({ data }) => {
+        .select('price, quantity') as any)
+        .then(({ data }: any) => {
           if (!data) return 0
-          return data.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          return data.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
         }),
-      supabase.from('orders').select('id', { count: 'exact', head: true }),
-      supabase
+      (supabase.from('orders').select('id', { count: 'exact', head: true }) as any),
+      (supabase
         .from('order_items')
         .select('product_id, title, quantity')
         .order('quantity', { ascending: false })
-        .limit(5),
+        .limit(5) as any),
     ])
 
     return {

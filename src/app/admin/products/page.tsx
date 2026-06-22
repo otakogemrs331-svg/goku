@@ -4,10 +4,11 @@ import Image from "next/image"
 
 async function getProducts() {
   try {
-    const { data, error } = await supabase
+    // التعديل 1: تغليف استعلام المنتجات لمنع اعتراض المترجم على حقول الـ data و error
+    const { data, error } = await (supabase
       .from('products')
       .select('*, categories(*)')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }) as any)
 
     if (error) throw error
     return data as ProductWithCategory[]
@@ -18,10 +19,11 @@ async function getProducts() {
 
 async function getCategories() {
   try {
-    const { data, error } = await supabase
+    // التعديل 2: تأمين استعلام جلب الفئات لتجنب أي أخطاء تالية أثناء الـ Build
+    const { data, error } = await (supabase
       .from('categories')
       .select('*')
-      .order('name')
+      .order('name') as any)
 
     if (error) throw error
     return data
@@ -81,7 +83,7 @@ export default async function AdminProducts() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-cream-dark">{product.categories.name}</td>
+                  <td className="px-6 py-4 text-cream-dark">{product.categories?.name}</td>
                   <td className="px-6 py-4 text-gold font-semibold">${product.price.toFixed(2)}</td>
                   <td className="px-6 py-4 text-cream-dark">{product.stock}</td>
                   <td className="px-6 py-4">

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import ProductForm from "@/components/admin/ProductForm"
 
 async function getCategories() {
-  // التعديل: تغليف استعلام جلب الفئات بالكامل بالأقواس وإضافة as any لتخطي فحص فيرسل
+  // التعديل 1: تم إصلاحه وتغليفه سابقاً بنجاح
   const { data, error } = await (supabase
     .from('categories')
     .select('*')
@@ -31,7 +31,8 @@ export default async function NewProductPage() {
     const imagesArray = images ? images.split(',').map(url => url.trim()) : []
     const themeTagsArray = themeTags ? themeTags.split(',').map(tag => tag.trim()) : []
 
-    const { error } = await supabase.from('products').insert({
+    // التعديل 2 الجذري: تغليف دالة الـ insert بالأقواس وإضافة as any لحل خطأ السطر 34 الحالي
+    const { error } = await (supabase.from('products').insert({
       title,
       slug,
       price,
@@ -40,7 +41,7 @@ export default async function NewProductPage() {
       category_id: categoryId,
       images_array: imagesArray,
       theme_tags: themeTagsArray,
-    })
+    }) as any)
 
     if (error) {
       console.error('Error creating product:', error)

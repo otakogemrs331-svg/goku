@@ -4,15 +4,16 @@ import ProductGrid from "@/components/ProductGrid"
 import ProductFilters from "@/components/ProductFilters"
 
 async function getProductsAndCategories() {
+  // التعديل هنا: تغليف كلا الاستعلامين بالأقواس وإضافة as any لتأمين الأخطاء والبيانات الراجعة
   const [productsResponse, categoriesResponse] = await Promise.all([
-    supabase
+    (supabase
       .from('products')
       .select('*, categories(*)')
-      .order('created_at', { ascending: false }),
-    supabase
+      .order('created_at', { ascending: false }) as any),
+    (supabase
       .from('categories')
       .select('*')
-      .order('name')
+      .order('name') as any)
   ])
 
   if (productsResponse.error) throw productsResponse.error

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/context/CartContext"
 import { useRouter } from "next/navigation"
 import ShippingForm from "@/components/checkout/ShippingForm"
@@ -14,17 +14,28 @@ type CheckoutStep = "shipping" | "payment" | "confirmation"
 export default function CheckoutPage() {
   const { items, getTotalPrice, getTotalItems, clearCart } = useCart()
   const router = useRouter()
+  
+  // حالة للتأكد من أن المكون قد تم تحميله في المتصفح
+  const [isMounted, setIsMounted] = useState(false)
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("shipping")
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null)
   const [orderNumber, setOrderNumber] = useState<string | null>(null)
 
-  const subtotal = getTotalPrice()
-  const itemCount = getTotalItems()
+  // تأمين التوجيه: لا يتم الفحص إلا بعد تحميل المكون
+  useEffect(() => {
+    setIsMounted(true)
+    if (items.length === 0) {
+      router.push("/cart")
+    }
+  }, [items, router])
 
-  if (items.length === 0) {
-    router.push("/cart")
+  // أثناء فترة التحميل، لا نعرض المحتوى لمنع أخطاء الـ SSR
+  if (!isMounted || items.length === 0) {
     return null
   }
+
+  const subtotal = getTotalPrice()
+  const itemCount = getTotalItems()
 
   const calculatedCosts = shippingInfo
     ? calculateTotalCosts(subtotal, itemCount, shippingInfo)
@@ -36,25 +47,19 @@ export default function CheckoutPage() {
   }
 
   const handlePaymentSubmit = async () => {
-    // Generate mock order number
     const mockOrderNumber = `AG-${Date.now().toString().slice(-8)}`
     setOrderNumber(mockOrderNumber)
     setCurrentStep("confirmation")
     
-    // Trigger mock email
     await sendTrackingEmail(mockOrderNumber, shippingInfo!, items)
-    
-    // Clear cart
     clearCart()
   }
 
   const sendTrackingEmail = async (orderNumber: string, shippingInfo: ShippingInfo, items: any[]) => {
-    // Mock email trigger - in production this would call an API endpoint
     console.log("📧 MOCK EMAIL TRIGGERED:")
     console.log(`Order #${orderNumber}`)
     console.log(`Shipping to: ${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.postalCode}, ${shippingInfo.country}`)
     console.log(`Items: ${items.length}`)
-    console.log("Email would be sent to customer with tracking information.")
   }
 
   return (
@@ -95,7 +100,6 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2">
             {currentStep === "shipping" && (
               <ShippingForm onSubmit={handleShippingSubmit} />
@@ -112,7 +116,6 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Order Summary Sidebar */}
           {currentStep !== "confirmation" && (
             <div className="lg:col-span-1">
               <OrderSummary

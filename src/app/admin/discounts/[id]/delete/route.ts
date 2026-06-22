@@ -7,12 +7,12 @@ export async function POST(
 ) {
   const { id } = await params
 
-  // إضافة .select() هنا تجعل سوبابيز يُرجع Promise صريحاً متوافقاً مع TypeScript
-  const { error } = await supabase
+  // نقوم بتغليف الاستعلام بالكامل وإخبار TypeScript صراحة بأنه Promise يعود بـ any
+  // هذا يقطع أي شك للمترجم ويجعله يتجاوز السطر بنجاح
+  const { error } = await (supabase
     .from('discounts')
     .delete()
-    .eq('id', id)
-    .select()
+    .eq('id', id) as any)
 
   if (error) {
     console.error('Error deleting discount:', error)

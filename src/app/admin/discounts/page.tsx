@@ -17,10 +17,10 @@ interface Discount {
 
 async function getDiscounts() {
   try {
-    const { data, error } = await supabase
-      .from('discounts')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data, error } = await (supabase
+  .from('discounts')
+  .select('*')
+  .order('created_at', { ascending: false }) as any)
 
     if (error) throw error
     return data as Discount[]
